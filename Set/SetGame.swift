@@ -32,20 +32,17 @@ struct SetGame {
                 for id in selectedCards {
                     cards[id].isSelected.toggle()
                     if cards[id].isSet == true {
-                        // remove index from cardsInGame, replace it with something from cardsInDeck
                         
+                        // remove index from cardsInGame, replace it with something from cardsInDeck
                         if let inGameID = cardsInGame.firstIndex(of: id) {
-                            if let newCard = cardsInDeck.popLast() {
-                                cardsInGame[inGameID] = newCard
-                            } else {
-                                cardsInGame.remove(at: inGameID)
-                            }
+                            cardsInGame.remove(at: inGameID)
+//                            if let newCard = cardsInDeck.popLast() {
+//                                cardsInGame[inGameID] = newCard
+//                            } else {
+//                                cardsInGame.remove(at: inGameID)
+//                            }
                         }
-//                        if !cardsInDeck.isEmpty {
-//                            cardsInGame[cardsInGame.firstIndex(of: id)!] = cardsInDeck.popLast()! // need to test end game when cardsInDeck.isEmpty == true
-//                        } else {
-//                            cardsInGame.remove(at: cardsInGame.firstIndex(of: id)!)
-//                        }
+
                     } else if cards[id].isSet == false {
                         cards[id].isSet = nil
                     }
