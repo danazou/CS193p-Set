@@ -12,42 +12,50 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-
-            HStack(alignment: .center){
-                Text("Set")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                Spacer()
-                Text("New Game")
-                    .foregroundColor(.blue)
-                    .onTapGesture {
-                    viewModel.newGame()
-                }
-            }
+            header
             Spacer()
             Divider()
-            Spacer()
-            
-            AspectVGrid(items: viewModel.cards, aspectRatio: 2/3, content: { card in
-                CardView(card: card)
-                    .padding(3)
-                    .onTapGesture { viewModel.choose(card) }
-            })
-
-            HStack{
-                
-                let text = Text("Deal 3 cards")
-                
-                if !viewModel.cardsInDeck.isEmpty {
-                    text.foregroundColor(.blue).onTapGesture {
-                        viewModel.dealMoreCards()
-                    }
-                } else {
-                    text.foregroundColor(.gray)
-                }
-            }
+//            Spacer()
+            gameBody
+            deal3Cards
         }
         .padding(.horizontal)
+    }
+    
+    var gameBody: some View {
+        AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
+            CardView(card: card)
+                .padding(3)
+                .onTapGesture { viewModel.choose(card) }
+        }
+    }
+    
+    var deal3Cards: some View {
+        
+        Button ("Deal 3 Cards") {
+            if !viewModel.cardsInDeck.isEmpty {
+                viewModel.dealMoreCards()
+            }
+        }.foregroundColor(viewModel.cardsInDeck.isEmpty ? .gray : .blue)
+        
+    }
+    
+    var header: some View {
+        HStack {
+            title
+            Spacer()
+            newGame
+        }
+    }
+    
+    var title: some View {
+        Text("Set").font(.largeTitle).fontWeight(.bold)
+    }
+    
+    var newGame: some View {
+        Button("New Game") {
+            viewModel.newGame()
+        }.foregroundColor(.blue)
     }
 }
 
@@ -128,40 +136,3 @@ struct ContentView_Previews: PreviewProvider {
             .preferredColorScheme(.light)
     }
 }
-
-//                    if card.shape == "🟡 oval"{
-//                        ForEach (0..<card.numberOfShapes) { _ in
-//                            ZStack{
-//                                Capsule()
-//                                    .fill().opacity(card.shading)
-//                                Capsule()
-//                                    .strokeBorder(lineWidth: 2)
-//                            }
-//                            .aspectRatio(2/1, contentMode: .fit)
-//                        }
-//                    } else if card.shape == "🔷 diamond"{
-//                        ForEach (0..<card.numberOfShapes) { _ in
-//                            ZStack{
-//                                Diamond()
-//                                    .fill().opacity(card.shading)
-//                                Diamond()
-//                                    .stroke(lineWidth: 2)
-//                            }
-//                            .aspectRatio(2/1, contentMode: .fit)
-//
-//                        }
-//                    } else if card.shape == "🟥 rectangle" {
-//                        ForEach (0..<card.numberOfShapes) { _ in
-//                            ZStack{
-//                                Rectangle()
-//                                    .fill().opacity(card.shading)
-//                                Rectangle()
-//                                    .strokeBorder(lineWidth: 2)
-//                            }
-//                            .aspectRatio(2/1, contentMode: .fit)
-//                        }
-//                    }
-                    
-//                    Text(card.shape).font(Font.system(size: min(geometry.size.height, geometry.size.width) * 0.2))
-//                    Text(card.combinations.map{String($0)}.joined()).font(.caption)
-//                    Text(String(card.id)).font(.caption)
