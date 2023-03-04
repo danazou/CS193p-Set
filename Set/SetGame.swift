@@ -11,6 +11,7 @@ struct SetGame {
     var cards: Array<Card>
     var cardsInDeck: [Int]
     var cardsInGame: [Int]
+    var discardedCards = [Int]()
     
     init(cards: Array<Card>, cardsInDeck: [Int], cardsInGame: [Int]) {
         self.cards = cards
@@ -33,9 +34,10 @@ struct SetGame {
                     cards[id].isSelected.toggle()
                     if cards[id].isSet == true {
                         
-                        // remove index from cardsInGame, replace it with something from cardsInDeck
+                        // remove index from cardsInGame -> discardedCards, replace it with something from cardsInDeck
                         if let inGameID = cardsInGame.firstIndex(of: id) {
-                            cardsInGame.remove(at: inGameID)
+                            discardedCards.append(cardsInGame.remove(at: inGameID)
+)
 //                            if let newCard = cardsInDeck.popLast() {
 //                                cardsInGame[inGameID] = newCard
 //                            } else {
@@ -95,8 +97,10 @@ struct SetGame {
 
     
     mutating func dealMoreCards() {
+        
         if isSet{
             for index in selectedCards {
+                discardedCards.append(cardsInGame[cardsInGame.firstIndex(of: index)!])
                 cardsInGame[cardsInGame.firstIndex(of: index)!] = cardsInDeck.popLast()! // need to test end game when cardsInDeck.isEmpty == true
             }
         } else {

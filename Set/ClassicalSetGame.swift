@@ -43,14 +43,29 @@ class ClassicalSetGame: ObservableObject {
         
         var cards: [Card] = []
         for i in model.cardsInGame{
-            cards.append(model.cards.first(where: {$0.id == i}) ?? Card(numberOfShapes: 1, color: "blue", shading: 0.0, shape: "nil found", id: -1, combinations: [i]))
+            cards.append(model.cards.first(where: {$0.id == i})!)
         }
 
         return cards
     }
     
-    var cardsInDeck: [Int] {
-        model.cardsInDeck
+    var cardsInDeck: [Card] {
+        
+        var cardsInDeck: [Card] = []
+        for i in model.cardsInDeck {
+            cardsInDeck.append(model.cards.first(where: {$0.id == i})!)
+        }
+        
+        return cardsInDeck
+//        model.cardsInDeck
+    }
+    
+    var discardedCards: [Card] {
+        var discardedCards: [Card] = []
+        for i in model.discardedCards {
+            discardedCards.append(model.cards.first(where: {$0.id == i})!)
+        }
+        return discardedCards
     }
     
     @ViewBuilder func symbol(_ shape: String, opacity: CGFloat, strokeWidth width: CGFloat) -> some View {

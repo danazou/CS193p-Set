@@ -17,44 +17,54 @@ struct ContentView: View {
             Divider()
 //            Spacer()
             gameBody
-//            HStack {
-//                deckBody
-//                discardBody
-//            }
+            HStack {
+                deckBody
+                Spacer()
+                discardBody
+            }
+            .padding(.horizontal)
 //            deal3Cards
         }
         .padding(.horizontal)
     }
     
-//    var deckBody: some View {
-//        // to add
-//        /*
-//         show cards in deck
-//         */
-//        ZStack {
-//            ForEach (viewModel.cardsInDeck) { card in
-//                CardView(card: card)
-//            }
-//        }
-//    }
+    var deckBody: some View {
+        VStack {
+            ZStack {
+                ForEach(viewModel.cardsInDeck) { _ in
+                    RoundedRectangle(cornerRadius: CardConstants.cornerRadius).foregroundColor(CardConstants.deckColor)
+                }
+            }
+            .frame(width: CardConstants.deckWidth, height: CardConstants.deckHeight)
+            .onTapGesture {
+                if !viewModel.cardsInDeck.isEmpty {
+                    viewModel.dealMoreCards()
+                }
+            }
+        }
+    }
     
-//    var discardBody: some View {
-//        // to add
-//        /*
-//         discard set, when cards get removed it goes to the set
-//         */
-//    }
+    var discardBody: some View {
+        VStack {
+            ZStack {
+                ForEach (viewModel.discardedCards) { card in
+                    CardView(card: card)
+                }
+            }
+            .frame(width: CardConstants.deckWidth, height: CardConstants.deckHeight)
+        }
+    }
     
     var gameBody: some View {
         AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
             CardView(card: card)
                 .padding(3)
+                .transition(AnyTransition.asymmetric(insertion: .scale, removal: .opacity).animation(.linear(duration: 5)))
                 .onTapGesture { viewModel.choose(card) }
         }
     }
     
     var deal3Cards: some View {
-        
         Button ("Deal 3 Cards") {
             if !viewModel.cardsInDeck.isEmpty {
                 viewModel.dealMoreCards()
@@ -79,6 +89,14 @@ struct ContentView: View {
         Button("New Game") {
             viewModel.newGame()
         }.foregroundColor(.blue)
+    }
+    
+    struct CardConstants {
+        static let deckWidth: CGFloat = deckHeight * aspectRatio
+        static let deckHeight: CGFloat = 100
+        static let aspectRatio: CGFloat = 2/3
+        static let cornerRadius: CGFloat = 8
+        static let deckColor: Color = .indigo
     }
 }
 
