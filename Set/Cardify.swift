@@ -15,10 +15,10 @@ struct Cardify: ViewModifier {
         ZStack{
             let shape = RoundedRectangle(cornerRadius: DrawingConstants.cornerRadius)
             
-            if isSet == nil {
-                shape.fill().foregroundColor(.white)
-            } else {
+            if isSet != nil {
                 shape.fill().foregroundColor(isSet! ? DrawingConstants.setFill : DrawingConstants.incorrectSetFill)
+            } else {
+                shape.fill().foregroundColor(.white)
             }
 
             shape.strokeBorder(isSelected ? DrawingConstants.selectedBorder : DrawingConstants.defaultBorder, lineWidth: DrawingConstants.cardStrokeWidth)

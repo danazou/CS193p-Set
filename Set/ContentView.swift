@@ -10,6 +10,9 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var viewModel: ClassicalSetGame
     
+    @Namespace private var discardingNamespace
+    @Namespace private var dealingNamespace
+    
     var body: some View {
         VStack {
             header
@@ -28,16 +31,57 @@ struct ContentView: View {
         .padding(.horizontal)
     }
     
-    var deckBody: some View {
-        VStack {
-            ZStack {
-                ForEach(viewModel.cardsInDeck) { _ in
-                    RoundedRectangle(cornerRadius: CardConstants.cornerRadius).foregroundColor(CardConstants.deckColor)
+    /*
+     dealing card delay
+     
+     Make the dealing of the cards happen one card at a time by delaying the animation of each subsequent card.
+         
+         Create a func that calculates the delay for each card and returns a delayed Animation.
+         
+         The delay duration of each card should depend the card’s index (i.e. position) in the cards array
+     */
+    
+//    func dealingDelay (for card: Card) -> Animation {
+//        var delay = 0.0
+//        
+//        
+//        Animation(animation(.easeInOut.delay(delay)))
+//        
+//        animation(.easeInOut.delay(delay), value: 1)
+//    }
+    
+    var gameBody: some View {
+        
+        AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
+            CardView(card: card)
+                .padding(3)
+                /* Animate cards entering and leaving Grid*/
+                .transition(AnyTransition.asymmetric(insertion: .identity, removal: .scale))
+                .matchedGeometryEffect(id: card.id, in: discardingNamespace)
+                .matchedGeometryEffect(id: card.id, in: dealingNamespace)
+                /* Tapping on card*/
+                .onTapGesture {
+                    withAnimation (.easeInOut(duration: 0.2)) {
+                        viewModel.choose(card)
+                    }
                 }
+        }
+    }
+    
+    var deckBody: some View {
+        ZStack {
+            ForEach(viewModel.deck) { card in
+                RoundedRectangle(cornerRadius: CardConstants.cornerRadius)
+                    .foregroundColor(CardConstants.deckColor)
+                    /* Animate cards entering and leaving deck*/
+                    .transition(AnyTransition.asymmetric(insertion: .identity, removal: .scale))
+                    .matchedGeometryEffect(id: card.id, in: dealingNamespace)
             }
-            .frame(width: CardConstants.deckWidth, height: CardConstants.deckHeight)
-            .onTapGesture {
-                if !viewModel.cardsInDeck.isEmpty {
+        }
+        .frame(width: CardConstants.deckWidth, height: CardConstants.deckHeight)
+        .onTapGesture {
+            withAnimation {
+                if !viewModel.deck.isEmpty {
                     viewModel.dealMoreCards()
                 }
             }
@@ -45,33 +89,25 @@ struct ContentView: View {
     }
     
     var discardBody: some View {
-        VStack {
-            ZStack {
-                ForEach (viewModel.discardedCards) { card in
-                    CardView(card: card)
-                }
+        ZStack {
+            ForEach (viewModel.discardedCards) { card in
+                CardView(card: card)
+                /* Animate card entering discard pile*/
+                    .transition(AnyTransition.asymmetric(insertion: .identity, removal: .identity))
+                    .matchedGeometryEffect(id: card.id, in: discardingNamespace)
             }
-            .frame(width: CardConstants.deckWidth, height: CardConstants.deckHeight)
         }
+        .frame(width: CardConstants.deckWidth, height: CardConstants.deckHeight)
     }
     
-    var gameBody: some View {
-        AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
-            CardView(card: card)
-                .padding(3)
-                .transition(AnyTransition.asymmetric(insertion: .scale, removal: .opacity).animation(.linear(duration: 5)))
-                .onTapGesture { viewModel.choose(card) }
-        }
-    }
-    
-    var deal3Cards: some View {
-        Button ("Deal 3 Cards") {
-            if !viewModel.cardsInDeck.isEmpty {
-                viewModel.dealMoreCards()
-            }
-        }.foregroundColor(viewModel.cardsInDeck.isEmpty ? .gray : .blue)
-        
-    }
+//    var deal3Cards: some View {
+//        Button ("Deal 3 Cards") {
+//            if !viewModel.cardsInDeck.isEmpty {
+//                viewModel.dealMoreCards()
+//            }
+//        }.foregroundColor(viewModel.cardsInDeck.isEmpty ? .gray : .blue)
+//
+//    }
     
     var header: some View {
         HStack {
@@ -87,7 +123,9 @@ struct ContentView: View {
     
     var newGame: some View {
         Button("New Game") {
-            viewModel.newGame()
+            withAnimation {
+                viewModel.newGame()
+            }
         }.foregroundColor(.blue)
     }
     

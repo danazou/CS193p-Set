@@ -40,9 +40,7 @@ struct SetGame {
     
     mutating func choose(_ card: Card){
         if let chosenIndex = cards.firstIndex(where: {$0.id == card.id}) { // chosenIndex is index of the chosen card in our Card deck -> unshuffled, 0..<81, id == index
-            
-            print (chosenIndex)
-            
+                        
             // there are already 3 chosen cards & currently selected card wasn't part of the 3
             if selectedCards.count == 3 {
                 if cards[chosenIndex].isSelected {
@@ -108,6 +106,8 @@ struct SetGame {
                 
                 discardedCards.append(cardsInGame[cardsInGame.firstIndex(of: index)!])
                 cardsInGame[cardsInGame.firstIndex(of: index)!] = cardsInDeck.popLast()!
+                
+                clearSelected()
             }
         } else {
             cardsInGame.append(contentsOf: cardsInDeck[0..<3])
