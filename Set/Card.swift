@@ -26,11 +26,10 @@ struct Card: Identifiable {
         
     }
     
-    var isMatched: Bool = false
+//    var isMatched: Bool = false
     var isSet: Bool? = nil
     var isSelected: Bool = false
-    var isActive = true
-//    var content: CardContent
+//    var isDiscarded = false
     
     
 }

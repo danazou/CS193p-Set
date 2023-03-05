@@ -21,7 +21,7 @@ struct Cardify: ViewModifier {
                 shape.fill().foregroundColor(isSet! ? DrawingConstants.setFill : DrawingConstants.incorrectSetFill)
             }
 
-            shape.strokeBorder(isSelected ? DrawingConstants.setFill : DrawingConstants.defaultBorder, lineWidth: DrawingConstants.cardStrokeWidth)
+            shape.strokeBorder(isSelected ? DrawingConstants.selectedBorder : DrawingConstants.defaultBorder, lineWidth: DrawingConstants.cardStrokeWidth)
 
             content
         }
@@ -34,7 +34,7 @@ struct Cardify: ViewModifier {
         static let defaultBorder: Color = .gray.opacity(0.3)
         static let selectedBorder: Color = .orange
         static let setFill: Color = Color(red: 1.0, green: 1.0, blue: 0.65)
-        static let incorrectSetFill: Color = .gray
+        static let incorrectSetFill: Color = .gray.opacity(0.3)
     }
 }
 

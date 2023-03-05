@@ -37,33 +37,36 @@ class ClassicalSetGame: ObservableObject {
     }
     
     @Published private var model: SetGame = createSetGame()
+    
+    private var modelCards: [Card] {
+        model.cards
+    }
             
     
     var cards: [Card] {
         
         var cards: [Card] = []
         for i in model.cardsInGame{
-            cards.append(model.cards.first(where: {$0.id == i})!)
+            cards.append(modelCards.first(where: {$0.id == i})!)
         }
 
         return cards
     }
     
-    var cardsInDeck: [Card] {
+    var deck: [Card] {
         
-        var cardsInDeck: [Card] = []
+        var deck: [Card] = []
         for i in model.cardsInDeck {
-            cardsInDeck.append(model.cards.first(where: {$0.id == i})!)
+            deck.append(modelCards.first(where: {$0.id == i})!)
         }
         
-        return cardsInDeck
-//        model.cardsInDeck
+        return deck
     }
     
     var discardedCards: [Card] {
         var discardedCards: [Card] = []
         for i in model.discardedCards {
-            discardedCards.append(model.cards.first(where: {$0.id == i})!)
+            discardedCards.append(modelCards.first(where: {$0.id == i})!)
         }
         return discardedCards
     }
