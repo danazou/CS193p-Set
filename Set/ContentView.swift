@@ -49,22 +49,41 @@ struct ContentView: View {
 //        
 //        animation(.easeInOut.delay(delay), value: 1)
 //    }
+    @State private var dealt = Set<Int>()
+    
+    func isUndealt (_ card: Card) -> Bool {
+        !dealt.contains(card.id)
+    }
+    
+    func deal(_ card: Card) {
+        dealt.insert(card.id)
+    }
     
     var gameBody: some View {
         
         AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
-            CardView(card: card)
-                .padding(3)
+            if isUndealt(card) {
+                Color.clear
+            } else {
+                CardView(card: card)
+                    .padding(3)
                 /* Animate cards entering and leaving Grid*/
-                .transition(AnyTransition.asymmetric(insertion: .identity, removal: .scale))
-                .matchedGeometryEffect(id: card.id, in: discardingNamespace)
-                .matchedGeometryEffect(id: card.id, in: dealingNamespace)
+                    .transition(AnyTransition.asymmetric(insertion: .scale, removal: .scale))
+                    .matchedGeometryEffect(id: card.id, in: discardingNamespace)
+                    .matchedGeometryEffect(id: card.id, in: dealingNamespace)
                 /* Tapping on card*/
-                .onTapGesture {
-                    withAnimation (.easeInOut(duration: 0.2)) {
-                        viewModel.choose(card)
+                    .onTapGesture {
+                        withAnimation (.easeInOut(duration: 0.2)) {
+                            viewModel.choose(card)
+                        }
                     }
+            }
+        } .onAppear {
+            withAnimation {
+                for card in viewModel.cards {
+                    deal(card)
                 }
+            }
         }
     }
     
@@ -125,6 +144,10 @@ struct ContentView: View {
         Button("New Game") {
             withAnimation {
                 viewModel.newGame()
+                dealt = []
+                for card in viewModel.cards {
+                    deal(card)
+                }
             }
         }.foregroundColor(.blue)
     }
