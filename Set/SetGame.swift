@@ -9,18 +9,19 @@ import Foundation
 
 struct SetGame {
     private (set) var cards: Array<Card>
-    var cardsInDeck: [Array<Card>.Index]
-    var cardsInGame: [Array<Card>.Index]
-    var discardedCards = [Array<Card>.Index]()
+    var activeCards: Int = 12
+//    var cardsInDeck: [Array<Card>.Index]
+//    var cardsInGame: [Array<Card>.Index]
+    var discardedCards = [Card]()
     
     var selectedCards: [Array<Card>.Index] = []
     var selectedCount = 0
     var selectedComb: [Int] = [0,0,0,0]
     
     init(cards: Array<Card>, cardsInDeck: [Int], cardsInGame: [Int]) {
-        self.cards = cards
-        self.cardsInDeck = cardsInDeck
-        self.cardsInGame = cardsInGame
+        self.cards = cards.shuffled()
+//        self.cardsInDeck = cardsInDeck
+//        self.cardsInGame = cardsInGame
     }
     
     var isSet: Bool = false
@@ -52,10 +53,12 @@ struct SetGame {
                 } else {
                     for index in selectedCards {
                         if isSet == true{
-                            // move index from cardsInGame -> discardedCards
-                            if let inGameID = cardsInGame.firstIndex(of: index) {
-                                discardedCards.append(cardsInGame.remove(at: inGameID))
-                            }
+                            // move index from cards -> discardedCards
+                            discardedCards.append(cards.remove(at: index))
+                            activeCards -= 1
+//                            if let inGameID = cardsInGame.firstIndex(of: index) {
+//                                discardedCards.append(cardsInGame.remove(at: inGameID))
+//                            }
                         } else {
                             // do nothing
                         }
@@ -104,18 +107,22 @@ struct SetGame {
             for index in selectedCards {
                 cards[index].isSelected = false
                 
-                discardedCards.append(cardsInGame[cardsInGame.firstIndex(of: index)!])
-                cardsInGame[cardsInGame.firstIndex(of: index)!] = cardsInDeck.popLast()!
+                discardedCards.append(cards.remove(at: index))
+//                discardedCards.append(cardsInGame[cardsInGame.firstIndex(of: index)!])
+//                cardsInGame[cardsInGame.firstIndex(of: index)!] = cardsInDeck.popLast()!
                 
                 clearSelected()
             }
         } else {
-            cardsInGame.append(contentsOf: cardsInDeck[0..<3])
-            cardsInDeck.removeFirst(3)
+            activeCards += 3
+//            cardsInGame.append(contentsOf: cardsInDeck[0..<3])
+//            cardsInDeck.removeFirst(3)
         }
     }
     
 }
+
+
 
 
 //                    if cards[index].isSet == true {
