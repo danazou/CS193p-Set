@@ -41,31 +41,51 @@ struct ContentView: View {
          The delay duration of each card should depend the card’s index (i.e. position) in the cards array
      */
     
-//    func dealingDelay (for card: Card) -> Animation {
-//        var delay = 0.0
-//        
-//        
-//        Animation(animation(.easeInOut.delay(delay)))
-//        
-//        animation(.easeInOut.delay(delay), value: 1)
-//    }
+    @State var dealt = Set<Int>()
+    
+    func deal (_ card: Card) {
+        dealt.insert(card.id)
+    }
+    
+    func isUndealt (_ card: Card) -> Bool {
+        !dealt.contains(card.id)
+    }
+    
+    func dealAnimation (for card: Card) -> Animation {
+        var delay = 0.0
+        
+        if let index = viewModel.cards.firstIndex(where: {$0.id == card.id}) {
+            delay = Double(index) * (CardConstants.totalDealDuration / Double(viewModel.cards.count))
+        }
+        return Animation.easeInOut.delay(delay)
+    }
     
     var gameBody: some View {
-        
         AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
-            CardView(card: card)
+            if isUndealt(card)  {
+                Color.clear
+            } else {
+                CardView(card: card)
                 .padding(3)
-                /* Animate cards entering and leaving Grid*/
-                .transition(AnyTransition.asymmetric(insertion: .identity, removal: .scale))
+            /* Animate cards entering and leaving Grid*/
                 .matchedGeometryEffect(id: card.id, in: discardingNamespace)
                 .matchedGeometryEffect(id: card.id, in: dealingNamespace)
-                /* Tapping on card*/
+                .transition(AnyTransition.asymmetric(insertion: .scale, removal: .scale))
+            /* Tapping on card*/
                 .onTapGesture {
                     withAnimation (.easeInOut(duration: 0.2)) {
                         viewModel.choose(card)
                     }
                 }
+            }
         }
+//        .onAppear {
+//            for card in viewModel.cards {
+//                withAnimation(dealAnimation(for: card)) {
+//                    deal(card)
+//                }
+//            }
+//        }
     }
     
     var deckBody: some View {
@@ -80,11 +100,41 @@ struct ContentView: View {
         }
         .frame(width: CardConstants.deckWidth, height: CardConstants.deckHeight)
         .onTapGesture {
-            withAnimation {
-                if !viewModel.deck.isEmpty {
+            if viewModel.isNewGame {
+                viewModel.isNewGame = false
+                for card in viewModel.cards {
+                    withAnimation(dealAnimation(for: card)) {
+                        deal(card)
+                    }
+                }
+//                withAnimation(Animation.easeInOut(duration: 2)) {
+//                    for card in viewModel.cards {
+//                        deal(card)
+//                    }
+//                }
+                
+                
+//                for card in viewModel.cards {
+//                    withAnimation (Animation.easeInOut(duration: 2)) {
+//                        deal(card)
+//                    }
+//                }
+            } else {
+                withAnimation {
                     viewModel.dealMoreCards()
                 }
             }
+//            withAnimation {
+//                if viewModel.isNewGame {
+////                    deal...
+//                    for card in viewModel.cards {
+//                        deal(card)
+//                    }
+//                    viewModel.isNewGame = false
+//                } else {
+//                    viewModel.dealMoreCards()
+//                }
+//            }
         }
     }
     
@@ -124,6 +174,7 @@ struct ContentView: View {
     var newGame: some View {
         Button("New Game") {
             withAnimation {
+                dealt = []
                 viewModel.newGame()
             }
         }.foregroundColor(.blue)
@@ -135,6 +186,7 @@ struct ContentView: View {
         static let aspectRatio: CGFloat = 2/3
         static let cornerRadius: CGFloat = 8
         static let deckColor: Color = .indigo
+        static let totalDealDuration: Double = 3
     }
 }
 

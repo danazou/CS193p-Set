@@ -74,6 +74,8 @@ class ClassicalSetGame: ObservableObject {
 //        return discardedCards
     }
     
+    var isNewGame: Bool = true
+
     @ViewBuilder func symbol(_ shape: String, opacity: CGFloat, strokeWidth width: CGFloat) -> some View {
         switch shape {
         case "🟡 oval":
@@ -120,6 +122,7 @@ class ClassicalSetGame: ObservableObject {
     
     func newGame() {
         model = ClassicalSetGame.createSetGame()
+        isNewGame = true
     }
 }
 
