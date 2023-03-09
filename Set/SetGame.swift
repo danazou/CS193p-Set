@@ -107,7 +107,12 @@ struct SetGame {
             for index in selectedCards {
                 cards[index].isSelected = false
                 
-                discardedCards.append(cards.remove(at: index))
+                let discardCard = cards.remove(at: index)
+                discardedCards.append(discardCard)
+
+                let newCard = cards.remove(at: activeCards - 1)
+                cards.insert(newCard, at: index)
+                
 //                discardedCards.append(cardsInGame[cardsInGame.firstIndex(of: index)!])
 //                cardsInGame[cardsInGame.firstIndex(of: index)!] = cardsInDeck.popLast()!
                 
