@@ -57,7 +57,7 @@ struct SetGame {
             }
             // currently selected card in't part of the 3 selected cards
             else if !cards[chosenIndex].isSelected {
-                for index in selectedCards.reversed() {
+                for index in selectedCards.sorted().reversed() {
                     if isSet == true {
                         // reset card status
                         resetStatus(of: index)
@@ -65,7 +65,8 @@ struct SetGame {
                         discardedCards.append(cards.remove(at: index))
                         activeCards -= 1
                     } else {
-                        // do nothing
+                        // reset card status
+                        resetStatus(of: index)
                     }
                 }
                 clearSelected()
@@ -88,15 +89,15 @@ struct SetGame {
                 
                 
                 if selectedCards.count == 3 {
-//                        setLoop: for index in selectedComb {
-//                                switch index {
-//                                case 0, 3, 6:
-//                                    isSet = true
-//                                default:
-//                                    isSet = false
-//                                    break setLoop
-//                                }
-//                            }
+//                setLoop: for index in selectedComb {
+//                        switch index {
+//                        case 0, 3, 6:
+//                            isSet = true
+//                        default:
+//                            isSet = false
+//                            break setLoop
+//                        }
+//                    }
                     isSet = true
                     
                     for index in selectedCards {

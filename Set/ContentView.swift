@@ -142,8 +142,10 @@ struct CardView: View {
                     }
                     .aspectRatio(2/1, contentMode: .fit)
                 }
-                    .rotationEffect(rotationDegrees(card.isSet))
-                    .animation(Animation.linear(duration: 0.5).repeatForever(autoreverses: false), value: card.isSet)
+                .scaleEffect(card.isSet ?? false ? 2 : 1)
+//                    .rotationEffect(rotationDegrees(card.isSet))
+                .animation(Animation.spring(), value: card.isSet)
+//                    .animation(Animation.linear(duration: 0.5).repeatForever(autoreverses: false), value: card.isSet)
             }
             .padding(.all, paddingSize(in: geometry.size))
             .foregroundColor(viewModel.findColor(of: card.color))
@@ -162,6 +164,10 @@ struct CardView: View {
             return .degrees(0)
         }
     }
+    
+//    private func scaleAmount() -> CGSize {
+//        
+//    }
     
     private struct DrawingConstants {
         static let symbolStrokeWidth: CGFloat = 1.5
