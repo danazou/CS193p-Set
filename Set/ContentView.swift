@@ -31,38 +31,9 @@ struct ContentView: View {
         .padding(.horizontal)
     }
     
-    /*
-     dealing card delay
-     
-     Make the dealing of the cards happen one card at a time by delaying the animation of each subsequent card.
-         
-         Create a func that calculates the delay for each card and returns a delayed Animation.
-         
-         The delay duration of each card should depend the card’s index (i.e. position) in the cards array
-     */
-    
-    @State var dealt = Set<Int>()
-    
-    func deal (_ card: Card) {
-        dealt.insert(card.id)
-    }
-    
-    func isUndealt (_ card: Card) -> Bool {
-        !dealt.contains(card.id)
-    }
-    
-    func dealAnimation (for card: Card) -> Animation {
-        var delay = 0.0
-        
-        if let index = viewModel.cards.firstIndex(where: {$0.id == card.id}) {
-            delay = Double(index) * (CardConstants.totalDealDuration / Double(viewModel.cards.count))
-        }
-        return Animation.easeInOut.delay(delay)
-    }
-    
     var gameBody: some View {
         AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
-            if isUndealt(card)  {
+            if viewModel.isNewGame {
                 Color.clear
             } else {
                 CardView(card: card)
@@ -79,13 +50,6 @@ struct ContentView: View {
                 }
             }
         }
-//        .onAppear {
-//            for card in viewModel.cards {
-//                withAnimation(dealAnimation(for: card)) {
-//                    deal(card)
-//                }
-//            }
-//        }
     }
     
     var deckBody: some View {
@@ -102,39 +66,14 @@ struct ContentView: View {
         .onTapGesture {
             if viewModel.isNewGame {
                 viewModel.isNewGame = false
-                for card in viewModel.cards {
-                    withAnimation(dealAnimation(for: card)) {
-                        deal(card)
-                    }
+                withAnimation {
+                    viewModel.dealGame()
                 }
-//                withAnimation(Animation.easeInOut(duration: 2)) {
-//                    for card in viewModel.cards {
-//                        deal(card)
-//                    }
-//                }
-                
-                
-//                for card in viewModel.cards {
-//                    withAnimation (Animation.easeInOut(duration: 2)) {
-//                        deal(card)
-//                    }
-//                }
             } else {
                 withAnimation {
                     viewModel.dealMoreCards()
                 }
             }
-//            withAnimation {
-//                if viewModel.isNewGame {
-////                    deal...
-//                    for card in viewModel.cards {
-//                        deal(card)
-//                    }
-//                    viewModel.isNewGame = false
-//                } else {
-//                    viewModel.dealMoreCards()
-//                }
-//            }
         }
     }
     
@@ -174,7 +113,6 @@ struct ContentView: View {
     var newGame: some View {
         Button("New Game") {
             withAnimation {
-                dealt = []
                 viewModel.newGame()
             }
         }.foregroundColor(.blue)
@@ -204,6 +142,8 @@ struct CardView: View {
                     }
                     .aspectRatio(2/1, contentMode: .fit)
                 }
+                    .rotationEffect(rotationDegrees(card.isSet))
+                    .animation(Animation.linear(duration: 0.5).repeatForever(autoreverses: false), value: card.isSet)
             }
             .padding(.all, paddingSize(in: geometry.size))
             .foregroundColor(viewModel.findColor(of: card.color))
@@ -215,6 +155,14 @@ struct CardView: View {
         min(size.width, size.height) * DrawingConstants.symbolPaddingScale
     }
     
+    private func rotationDegrees (_ isSet: Bool?) -> Angle {
+        if isSet == true {
+            return .degrees(180)
+        } else {
+            return .degrees(0)
+        }
+    }
+    
     private struct DrawingConstants {
         static let symbolStrokeWidth: CGFloat = 1.5
         static let symbolPaddingScale: CGFloat = 0.2
@@ -222,7 +170,24 @@ struct CardView: View {
 }
 
 
-
+//@State var dealt = Set<Int>()
+//
+//func deal (_ card: Card) {
+//    dealt.insert(card.id)
+//}
+//
+//func isUndealt (_ card: Card) -> Bool {
+//    !dealt.contains(card.id)
+//}
+//
+//func dealAnimation (for card: Card) -> Animation {
+//    var delay = 0.0
+//
+//    if let index = viewModel.cards.firstIndex(where: {$0.id == card.id}) {
+//        delay = Double(index) * (CardConstants.totalDealDuration / Double(viewModel.cards.count))
+//    }
+//    return Animation.easeInOut.delay(delay)
+//}
 
 
 

@@ -124,6 +124,10 @@ class ClassicalSetGame: ObservableObject {
         model = ClassicalSetGame.createSetGame()
         isNewGame = true
     }
+    
+    func dealGame () {
+        model.dealGame()
+    }
 }
 
 /*
