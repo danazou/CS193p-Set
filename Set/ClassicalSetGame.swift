@@ -26,14 +26,8 @@ class ClassicalSetGame: ObservableObject {
                 }
             }
         }
-        var cardsInDeck = Array(0..<81)
-            .shuffled()
-        var cardsInGame: [Int] = []
-        for _ in 0..<12 {
-            cardsInGame.append(cardsInDeck.removeFirst())
-        }
         
-        return SetGame(cards: cards, cardsInDeck: cardsInDeck, cardsInGame: cardsInGame)
+        return SetGame(cards: cards)
     }
     
     @Published private var model: SetGame = createSetGame()
@@ -47,9 +41,6 @@ class ClassicalSetGame: ObservableObject {
         
         var cards: [Card] = []
         cards.append(contentsOf: masterDeck[0..<model.activeCards])
-//        for i in model.cardsInGame{
-//            cards.append(modelCards.first(where: {$0.id == i})!)
-//        }
 
         return cards
     }
@@ -58,20 +49,12 @@ class ClassicalSetGame: ObservableObject {
         
         var deck: [Card] = []
         deck.append(contentsOf:masterDeck[model.activeCards...])
-//        for i in model.cardsInDeck {
-//            deck.append(modelCards.first(where: {$0.id == i})!)
-//        }
         
         return deck
     }
     
     var discardedCards: [Card] {
         model.discardedCards
-//        var discardedCards: [Card] = []
-//        for i in model.discardedCards {
-//            discardedCards.append(modelCards.first(where: {$0.id == i})!)
-//        }
-//        return discardedCards
     }
     
     var isNewGame: Bool = true
