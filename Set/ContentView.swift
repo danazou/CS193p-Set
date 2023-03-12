@@ -128,11 +128,12 @@ struct ContentView: View {
     }
 }
 
+
 struct CardView: View {
     let card: Card
     var viewModel = ClassicalSetGame()
     
-    var body: some View{
+    var body: some View {
         GeometryReader { geometry in
             VStack {
                 ForEach(0..<card.numberOfShapes, id: \.self) { _ in
@@ -142,10 +143,6 @@ struct CardView: View {
                     }
                     .aspectRatio(2/1, contentMode: .fit)
                 }
-                .scaleEffect(card.isSet ?? false ? 2 : 1)
-//                    .rotationEffect(rotationDegrees(card.isSet))
-                .animation(Animation.spring(), value: card.isSet)
-//                    .animation(Animation.linear(duration: 0.5).repeatForever(autoreverses: false), value: card.isSet)
             }
             .padding(.all, paddingSize(in: geometry.size))
             .foregroundColor(viewModel.findColor(of: card.color))
@@ -156,19 +153,6 @@ struct CardView: View {
     private func paddingSize(in size: CGSize) -> CGFloat {
         min(size.width, size.height) * DrawingConstants.symbolPaddingScale
     }
-    
-    private func rotationDegrees (_ isSet: Bool?) -> Angle {
-        if isSet == true {
-            return .degrees(180)
-        } else {
-            return .degrees(0)
-        }
-    }
-    
-//    private func scaleAmount() -> CGSize {
-//        
-//    }
-    
     private struct DrawingConstants {
         static let symbolStrokeWidth: CGFloat = 1.5
         static let symbolPaddingScale: CGFloat = 0.2
