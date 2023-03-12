@@ -7,11 +7,12 @@
 
 import SwiftUI
 
-struct Cardify: ViewModifier {
+struct Cardify: AnimatableModifier {
     var isSet: Bool?
     var isSelected: Bool
     
     func body(content: Content) -> some View {
+
         ZStack{
             let shape = RoundedRectangle(cornerRadius: DrawingConstants.cornerRadius)
             
@@ -24,6 +25,18 @@ struct Cardify: ViewModifier {
             shape.strokeBorder(isSelected ? DrawingConstants.selectedBorder : DrawingConstants.defaultBorder, lineWidth: DrawingConstants.cardStrokeWidth)
 
             content
+                .scaleEffect(scaleFactor(isSet))
+                .animation(.interpolatingSpring(mass: 7, stiffness: 2500, damping: 0), value: isSet)
+        }
+        .rotationEffect(!(isSet ?? true) ? .degrees(5) : .degrees(0))
+        .animation(.default, value: isSet)
+    }
+    
+    private func scaleFactor (_ isSet: Bool?) -> CGFloat {
+        if isSet == true {
+            return 1.1
+        } else {
+            return 1
         }
     }
     

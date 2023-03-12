@@ -26,19 +26,13 @@ class ClassicalSetGame: ObservableObject {
                 }
             }
         }
-        var cardsInDeck = Array(0..<81)
-            .shuffled()
-        var cardsInGame: [Int] = []
-        for _ in 0..<12 {
-            cardsInGame.append(cardsInDeck.removeFirst())
-        }
         
-        return SetGame(cards: cards, cardsInDeck: cardsInDeck, cardsInGame: cardsInGame)
+        return SetGame(cards: cards)
     }
     
     @Published private var model: SetGame = createSetGame()
     
-    private var modelCards: [Card] {
+    private var masterDeck: [Card] {
         model.cards
     }
             
@@ -46,9 +40,7 @@ class ClassicalSetGame: ObservableObject {
     var cards: [Card] {
         
         var cards: [Card] = []
-        for i in model.cardsInGame{
-            cards.append(modelCards.first(where: {$0.id == i})!)
-        }
+        cards.append(contentsOf: masterDeck[0..<model.activeCards])
 
         return cards
     }
@@ -56,21 +48,17 @@ class ClassicalSetGame: ObservableObject {
     var deck: [Card] {
         
         var deck: [Card] = []
-        for i in model.cardsInDeck {
-            deck.append(modelCards.first(where: {$0.id == i})!)
-        }
+        deck.append(contentsOf:masterDeck[model.activeCards...])
         
         return deck
     }
     
     var discardedCards: [Card] {
-        var discardedCards: [Card] = []
-        for i in model.discardedCards {
-            discardedCards.append(modelCards.first(where: {$0.id == i})!)
-        }
-        return discardedCards
+        model.discardedCards
     }
     
+    var isNewGame: Bool = true
+
     @ViewBuilder func symbol(_ shape: String, opacity: CGFloat, strokeWidth width: CGFloat) -> some View {
         switch shape {
         case "🟡 oval":
@@ -117,6 +105,11 @@ class ClassicalSetGame: ObservableObject {
     
     func newGame() {
         model = ClassicalSetGame.createSetGame()
+        isNewGame = true
+    }
+    
+    func dealGame () {
+        model.dealGame()
     }
 }
 

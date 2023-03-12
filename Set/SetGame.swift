@@ -9,90 +9,95 @@ import Foundation
 
 struct SetGame {
     private (set) var cards: Array<Card>
-    var cardsInDeck: [Array<Card>.Index]
-    var cardsInGame: [Array<Card>.Index]
-    var discardedCards = [Array<Card>.Index]()
+    var activeCards: Int = 0
+    var discardedCards = [Card]()
     
     var selectedCards: [Array<Card>.Index] = []
     var selectedCount = 0
     var selectedComb: [Int] = [0,0,0,0]
     
-    init(cards: Array<Card>, cardsInDeck: [Int], cardsInGame: [Int]) {
-        self.cards = cards
-        self.cardsInDeck = cardsInDeck
-        self.cardsInGame = cardsInGame
+    init(cards: Array<Card>) {
+        self.cards = cards.shuffled()
     }
     
     var isSet: Bool = false
     
     mutating func clearSelected() {
-        /* Removes all indices from selectedCards and reset related status */
-        for index in selectedCards {
-            // deselect cards that are already selected
-            cards[index].isSelected = false
-            cards[index].isSet = nil
-        }
+        /* Removes all indices from selectedCards*/
         selectedComb = [0,0,0,0]
         isSet = false
-        
         selectedCards = []
     }
     
+    mutating func resetStatus(of index: Int) {
+        /* Resets isSelected & isSet status of card */
+        cards[index].isSelected = false
+        cards[index].isSet = nil
+    }
+    
     mutating func choose(_ card: Card){
-        if let chosenIndex = cards.firstIndex(where: {$0.id == card.id}) { // chosenIndex is index of the chosen card in our Card deck -> unshuffled, 0..<81, id == index
+        var chosenIndex = cards.firstIndex(where: {$0.id == card.id}) ?? 0 // chosenIndex is index of the chosen card in our Card deck
                         
-            // there are already 3 chosen cards & currently selected card wasn't part of the 3
-            if selectedCards.count == 3 {
-                if cards[chosenIndex].isSelected {
-                    if isSet == true {
-                        // do nothing
-                    } else {
-                        clearSelected()
-                    }
+        // there are already 3 chosen cards
+        if selectedCards.count == 3 {
+            // currently selected card is already selected
+            if cards[chosenIndex].isSelected {
+                if isSet == true {
+                    // do nothing
                 } else {
                     for index in selectedCards {
-                        if isSet == true{
-                            // move index from cardsInGame -> discardedCards
-                            if let inGameID = cardsInGame.firstIndex(of: index) {
-                                discardedCards.append(cardsInGame.remove(at: inGameID))
-                            }
-                        } else {
-                            // do nothing
-                        }
+                        resetStatus(of: index)
                     }
                     clearSelected()
                 }
             }
-            
-            if selectedCards.count < 3 {
-                if cards[chosenIndex].isSelected {
-                    // deselect it
-                    selectedComb = zip(selectedComb, cards[chosenIndex].combinations).map(-)
-                    selectedCards.remove(at: selectedCards.firstIndex(of: chosenIndex)!)
-                    cards[chosenIndex].isSelected.toggle()
-                } else {
-                    // select it and check for set
-                    cards[chosenIndex].isSelected = true
-                    
-                    selectedComb = zip(selectedComb, cards[chosenIndex].combinations).map(+)
-                    selectedCards.append(chosenIndex)
-                    
-                    
-                    if selectedCards.count == 3 {
-//                        setLoop: for index in selectedComb {
-//                                switch index {
-//                                case 0, 3, 6:
-//                                    isSet = true
-//                                default:
-//                                    isSet = false
-//                                    break setLoop
-//                                }
-//                            }
-                        isSet = true
-                        
-                        for index in selectedCards {
-                            cards[index].isSet = isSet
+            // currently selected card in't part of the 3 selected cards
+            else if !cards[chosenIndex].isSelected {
+                for index in selectedCards.sorted().reversed() {
+                    if isSet == true {
+                        // reset card status
+                        resetStatus(of: index)
+                        // move card from cards -> discardedCards
+                        discardedCards.append(cards.remove(at: index))
+                        activeCards -= 1
+                    } else {
+                        // reset card status
+                        resetStatus(of: index)
+                    }
+                }
+                clearSelected()
+                chosenIndex = cards.firstIndex(where: {$0.id == card.id}) ?? 0
+            }
+        }
+        
+        if selectedCards.count < 3 {
+            if cards[chosenIndex].isSelected {
+                // deselect it
+                selectedComb = zip(selectedComb, cards[chosenIndex].combinations).map(-)
+                selectedCards.remove(at: selectedCards.firstIndex(of: chosenIndex)!)
+                cards[chosenIndex].isSelected.toggle()
+            } else {
+                // select it and check for set
+                cards[chosenIndex].isSelected = true
+                
+                selectedComb = zip(selectedComb, cards[chosenIndex].combinations).map(+)
+                selectedCards.append(chosenIndex)
+                
+                
+                if selectedCards.count == 3 {
+                setLoop: for index in selectedComb {
+                        switch index {
+                        case 0, 3, 6:
+                            isSet = true
+                        default:
+                            isSet = false
+                            break setLoop
                         }
+                    }
+//                    isSet = false
+                    
+                    for index in selectedCards {
+                        cards[index].isSet = isSet
                     }
                 }
             }
@@ -102,69 +107,22 @@ struct SetGame {
     mutating func dealMoreCards() {
         if isSet {
             for index in selectedCards {
-                cards[index].isSelected = false
-                
-                discardedCards.append(cardsInGame[cardsInGame.firstIndex(of: index)!])
-                cardsInGame[cardsInGame.firstIndex(of: index)!] = cardsInDeck.popLast()!
-                
-                clearSelected()
+                // reset card status
+                resetStatus(of: index)
+                // move card into discardPile
+                discardedCards.append(cards.remove(at: index))
+                // replace with new card
+                let newCard = cards.remove(at: activeCards - 1)
+                cards.insert(newCard, at: index)
             }
+            clearSelected()
         } else {
-            cardsInGame.append(contentsOf: cardsInDeck[0..<3])
-            cardsInDeck.removeFirst(3)
+            activeCards += 3
         }
     }
     
+    mutating func dealGame() {
+        activeCards += 12
+    }
+    
 }
-
-
-//                    if cards[index].isSet == true {
-//
-//                        // remove index from cardsInGame -> discardedCards, replace it with something from cardsInDeck
-//                        if let inGameID = cardsInGame.firstIndex(of: index) {
-//                            discardedCards.append(cardsInGame.remove(at: inGameID))
-//                        }
-//
-////                            if let newCard = cardsInDeck.popLast() {
-////                                cardsInGame[inGameID] = newCard
-////                            } else {
-////                                cardsInGame.remove(at: inGameID)
-////                            }
-//
-//                        cards[index].isDiscarded = true
-//
-//                    } else if cards[index].isSet == false {
-//                        cards[index].isSet = nil
-//                    }
-           
-//            if !cards[chosenIndex].isSelected {
-//
-//                cards[chosenIndex].isSelected = true
-//
-//                selectedComb = zip(selectedComb, cards[chosenIndex].combinations).map(+)
-//                selectedCards.append(chosenIndex)
-//
-//
-//                if selectedCards.count == 3 {
-////                setLoop: for index in selectedComb {
-////                        switch index {
-////                        case 0, 3, 6:
-////                            isSet = true
-////                        default:
-////
-////                            isSet = false
-////                            break setLoop
-////                        }
-////                    }
-//                    isSet = true
-//
-//                    for index in selectedCards {
-//                        cards[index].isSet = isSet
-//                    }
-//                }
-//
-//            } else if selectedCards.count < 3 {
-//                selectedComb = zip(selectedComb, cards[chosenIndex].combinations).map(-)
-//                selectedCards.remove(at: selectedCards.firstIndex(of: chosenIndex)!)
-//                cards[chosenIndex].isSelected.toggle()
-//            }

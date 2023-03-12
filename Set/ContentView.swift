@@ -31,40 +31,24 @@ struct ContentView: View {
         .padding(.horizontal)
     }
     
-    /*
-     dealing card delay
-     
-     Make the dealing of the cards happen one card at a time by delaying the animation of each subsequent card.
-         
-         Create a func that calculates the delay for each card and returns a delayed Animation.
-         
-         The delay duration of each card should depend the card’s index (i.e. position) in the cards array
-     */
-    
-//    func dealingDelay (for card: Card) -> Animation {
-//        var delay = 0.0
-//        
-//        
-//        Animation(animation(.easeInOut.delay(delay)))
-//        
-//        animation(.easeInOut.delay(delay), value: 1)
-//    }
-    
     var gameBody: some View {
-        
         AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
-            CardView(card: card)
+            if viewModel.isNewGame {
+                Color.clear
+            } else {
+                CardView(card: card)
                 .padding(3)
-                /* Animate cards entering and leaving Grid*/
-                .transition(AnyTransition.asymmetric(insertion: .identity, removal: .scale))
+            /* Animate cards entering and leaving Grid*/
                 .matchedGeometryEffect(id: card.id, in: discardingNamespace)
                 .matchedGeometryEffect(id: card.id, in: dealingNamespace)
-                /* Tapping on card*/
+                .transition(AnyTransition.asymmetric(insertion: .scale, removal: .scale))
+            /* Tapping on card*/
                 .onTapGesture {
                     withAnimation (.easeInOut(duration: 0.2)) {
                         viewModel.choose(card)
                     }
                 }
+            }
         }
     }
     
@@ -80,8 +64,13 @@ struct ContentView: View {
         }
         .frame(width: CardConstants.deckWidth, height: CardConstants.deckHeight)
         .onTapGesture {
-            withAnimation {
-                if !viewModel.deck.isEmpty {
+            if viewModel.isNewGame {
+                viewModel.isNewGame = false
+                withAnimation {
+                    viewModel.dealGame()
+                }
+            } else {
+                withAnimation {
                     viewModel.dealMoreCards()
                 }
             }
@@ -135,14 +124,16 @@ struct ContentView: View {
         static let aspectRatio: CGFloat = 2/3
         static let cornerRadius: CGFloat = 8
         static let deckColor: Color = .indigo
+        static let totalDealDuration: Double = 3
     }
 }
+
 
 struct CardView: View {
     let card: Card
     var viewModel = ClassicalSetGame()
     
-    var body: some View{
+    var body: some View {
         GeometryReader { geometry in
             VStack {
                 ForEach(0..<card.numberOfShapes, id: \.self) { _ in
@@ -162,7 +153,6 @@ struct CardView: View {
     private func paddingSize(in size: CGSize) -> CGFloat {
         min(size.width, size.height) * DrawingConstants.symbolPaddingScale
     }
-    
     private struct DrawingConstants {
         static let symbolStrokeWidth: CGFloat = 1.5
         static let symbolPaddingScale: CGFloat = 0.2
@@ -170,7 +160,24 @@ struct CardView: View {
 }
 
 
-
+//@State var dealt = Set<Int>()
+//
+//func deal (_ card: Card) {
+//    dealt.insert(card.id)
+//}
+//
+//func isUndealt (_ card: Card) -> Bool {
+//    !dealt.contains(card.id)
+//}
+//
+//func dealAnimation (for card: Card) -> Animation {
+//    var delay = 0.0
+//
+//    if let index = viewModel.cards.firstIndex(where: {$0.id == card.id}) {
+//        delay = Double(index) * (CardConstants.totalDealDuration / Double(viewModel.cards.count))
+//    }
+//    return Animation.easeInOut.delay(delay)
+//}
 
 
 
