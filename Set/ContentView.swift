@@ -32,12 +32,9 @@ struct ContentView: View {
     }
     
     var gameBody: some View {
-        AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
-            if viewModel.isNewGame {
-                Color.clear
-            } else {
+            AspectVGrid(items: viewModel.cards, aspectRatio: 2/3) { card in
                 CardView(card: card)
-                .padding(3)
+                .padding(5)
             /* Animate cards entering and leaving Grid*/
                 .matchedGeometryEffect(id: card.id, in: discardingNamespace)
                 .matchedGeometryEffect(id: card.id, in: dealingNamespace)
@@ -49,7 +46,6 @@ struct ContentView: View {
                     }
                 }
             }
-        }
     }
     
     var deckBody: some View {
@@ -71,7 +67,9 @@ struct ContentView: View {
                 }
             } else {
                 withAnimation {
-                    viewModel.dealMoreCards()
+                    if viewModel.cards.count < 81 {
+                        viewModel.dealMoreCards()
+                    }
                 }
             }
         }
