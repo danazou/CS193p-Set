@@ -20,8 +20,13 @@ struct ContentView: View {
             Divider()
 //            Spacer()
             gameBody
-            HStack {
+            HStack (alignment: .bottom) {
                 deckBody
+                Spacer()
+                VStack {
+                    score.padding(.bottom)
+                    Text("\(String(viewModel.setPresent))")
+                }
                 Spacer()
                 discardBody
             }
@@ -106,6 +111,10 @@ struct ContentView: View {
     
     var title: some View {
         Text("Set").font(.largeTitle).fontWeight(.bold)
+    }
+    
+    var score: some View {
+        Text("Score: \(viewModel.score)")
     }
     
     var newGame: some View {

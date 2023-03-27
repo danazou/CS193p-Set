@@ -9,27 +9,32 @@ import Foundation
 
 struct SetGame {
     private (set) var cards: Array<Card>
-    var activeCards: Int = 0
-    var discardedCards = [Card]()
+    private (set) var activeCards: Int = 0
+    private (set) var discardedCards = [Card]()
     
-    var selectedCards: [Array<Card>.Index] = []
-    var selectedCount = 0
-    var selectedComb: [Int] = [0,0,0,0]
+    private var selectedCards: [Array<Card>.Index] = []
+    private var selectedCount = 0
+    private var selectedComb: [Int] = [0,0,0,0]
+    
+    private (set) var score: Int
+    private var timeStart: Date
     
     init(cards: Array<Card>) {
         self.cards = cards.shuffled()
+        score = 0
+        timeStart = Date()
     }
     
-    var isSet: Bool = false
+    private var isSet: Bool = false
     
-    mutating func clearSelected() {
+    private mutating func clearSelected() {
         /* Removes all indices from selectedCards*/
         selectedComb = [0,0,0,0]
         isSet = false
         selectedCards = []
     }
     
-    mutating func resetStatus(of index: Int) {
+    private mutating func resetStatus(of index: Int) {
         /* Resets isSelected & isSet status of card */
         cards[index].isSelected = false
         cards[index].isSet = nil
@@ -68,6 +73,8 @@ struct SetGame {
                 clearSelected()
                 chosenIndex = cards.firstIndex(where: {$0.id == card.id}) ?? 0
             }
+            // reset stopwatch
+            timeStart = Date()
         }
         
         if selectedCards.count < 3 {
@@ -94,7 +101,17 @@ struct SetGame {
                             break setLoop
                         }
                     }
-//                    isSet = false
+//                    isSet = true
+                    
+                    // keep score
+                    let elapsedTime = abs(timeStart.timeIntervalSinceNow)
+                    let timeBoost = max((10 - elapsedTime), 1)
+                    
+                    if isSet {
+                        score += 1 * Int(timeBoost)
+                    } else if !isSet {
+                        score -= 1
+                    }
                     
                     for index in selectedCards {
                         cards[index].isSet = isSet
@@ -104,7 +121,71 @@ struct SetGame {
         }
     }
     
+    func setPresent (in cardCount: Int) -> (Bool, [Int]) {
+        var setPresent = false
+        var potentialSet = [Int]()
+        var comb = [0,0,0,0]
+        
+        if cardCount != 0 {
+            
+            // need to rename count
+            let count = min(cardCount, 20)
+            
+        cardLoop: for (i, card) in cards[0..<count - 2].enumerated() {
+            potentialSet = [i]
+            comb = card.combinations
+            
+            // skip cards that are a Set
+            if card.isSet == true {
+                continue
+            }
+            // check 2nd card
+            for (j, potentialCard) in cards [i+1..<count - 1].enumerated() {
+                
+                // add comb
+                comb = zip(comb, potentialCard.combinations).map(+)
+                
+                // check 3rd card
+                for potentialMatch in cards [j + i..<count] {
+                    
+                    // add comb
+                    comb = zip(comb, potentialMatch.combinations).map(+)
+                    
+                    // check for set
+                    setLoop: for index in comb {
+                        
+                        switch index {
+                        case 0, 3, 6:
+                            setPresent = true
+                        default:
+                            setPresent = false
+                            break setLoop
+                        }
+                    }
+                    
+                    if setPresent {
+                        // set found
+                        potentialSet.append(contentsOf: [j, j+1])
+                        break cardLoop
+                    } else {
+                        // remove comb
+                        comb = zip(comb, potentialMatch.combinations).map(-)
+                    }
+                }
+                // no set found
+                comb = card.combinations
+            }
+        }
+        }
+        return (setPresent, potentialSet)
+    }
+    
     mutating func dealMoreCards() {
+        // penalise
+        if setPresent(in: activeCards).0 {
+            score -= 1
+        }
+        
         if isSet {
             for index in selectedCards {
                 // reset card status
@@ -119,10 +200,12 @@ struct SetGame {
         } else {
             activeCards += 3
         }
+        timeStart = Date()
     }
     
     mutating func dealGame() {
         activeCards += 12
+        timeStart = Date()
     }
     
 }
