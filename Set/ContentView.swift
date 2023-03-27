@@ -24,12 +24,15 @@ struct ContentView: View {
                 deckBody
                 Spacer()
                 VStack {
-                    score.padding(.bottom)
-                    Text("\(String(viewModel.setPresent))")
-                }
+                    score
+                    Spacer()
+                    hint
+//                    Text("\(String(viewModel.setPresent))")
+                }.padding()
                 Spacer()
                 discardBody
             }
+            .frame(height: CardConstants.deckHeight)
             .padding(.horizontal)
 //            deal3Cards
         }
@@ -125,6 +128,12 @@ struct ContentView: View {
         }.foregroundColor(.blue)
     }
     
+    var hint: some View {
+        Button ("Hint") {
+            viewModel.showHint()
+        }.foregroundColor(.blue)
+    }
+    
     struct CardConstants {
         static let deckWidth: CGFloat = deckHeight * aspectRatio
         static let deckHeight: CGFloat = 100
@@ -150,10 +159,11 @@ struct CardView: View {
                     }
                     .aspectRatio(2/1, contentMode: .fit)
                 }
+//                Text(card.combinations.map{String($0)}.joined()).font(.caption)
             }
             .padding(.all, paddingSize(in: geometry.size))
             .foregroundColor(viewModel.findColor(of: card.color))
-            .cardify(isSet: card.isSet, isSelected: card.isSelected)
+            .cardify(state: card.state)
         }
     }
     

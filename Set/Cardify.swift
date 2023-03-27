@@ -8,35 +8,66 @@
 import SwiftUI
 
 struct Cardify: AnimatableModifier {
-    var isSet: Bool?
-    var isSelected: Bool
+    var state: SetState
     
-    func body(content: Content) -> some View {
+    var cardStyle: some View {
+        let shape = RoundedRectangle(cornerRadius: DrawingConstants.cornerRadius)
 
-        ZStack{
-            let shape = RoundedRectangle(cornerRadius: DrawingConstants.cornerRadius)
-            
-            if isSet != nil {
-                shape.fill().foregroundColor(isSet! ? DrawingConstants.setFill : DrawingConstants.incorrectSetFill)
-            } else {
-                shape.fill().foregroundColor(.white)
+        switch state {
+        case .correctSet:
+            return ZStack {
+                shape.fill().foregroundColor(DrawingConstants.setFill)
+                shape.strokeBorder(DrawingConstants.selectedBorder, lineWidth: DrawingConstants.cardStrokeWidth)
             }
-
-            shape.strokeBorder(isSelected ? DrawingConstants.selectedBorder : DrawingConstants.defaultBorder, lineWidth: DrawingConstants.cardStrokeWidth)
-
-            content
-                .scaleEffect(scaleFactor(isSet))
-                .animation(.interpolatingSpring(mass: 7, stiffness: 2500, damping: 0), value: isSet)
+        case .incorrrectSet:
+            return ZStack  {
+                shape.fill().foregroundColor(DrawingConstants.incorrectSetFill)
+                shape.strokeBorder(DrawingConstants.selectedBorder, lineWidth: DrawingConstants.cardStrokeWidth)
+            }
+        case .selected:
+            return ZStack  {
+                shape.fill().foregroundColor(.white)
+                shape.strokeBorder(DrawingConstants.selectedBorder, lineWidth: DrawingConstants.cardStrokeWidth)
+            }
+        case .inactive:
+            return ZStack  {
+                shape.fill().foregroundColor(.white)
+                shape.strokeBorder(DrawingConstants.defaultBorder, lineWidth: DrawingConstants.cardStrokeWidth)
+            }
+        case .hint:
+            return ZStack  {
+                shape.fill().foregroundColor(.white)
+                shape.strokeBorder(DrawingConstants.hintBorder, lineWidth: DrawingConstants.cardStrokeWidth)
+            }
         }
-        .rotationEffect(!(isSet ?? true) ? .degrees(5) : .degrees(0))
-        .animation(.default, value: isSet)
     }
     
-    private func scaleFactor (_ isSet: Bool?) -> CGFloat {
-        if isSet == true {
-            return 1.1
+    func body(content: Content) -> some View {
+        ZStack {
+            cardStyle
+            content
+                .rotationEffect(correctSetRotation(state))
+                .animation(.default.repeatCount(2, autoreverses: false), value: state)
+        }
+        .rotationEffect(wrongSetRotation(state))
+        .animation(.default, value: state)
+    }
+    
+
+    private func wrongSetRotation (_ state: SetState) -> Angle {
+        if state == .incorrrectSet {
+            return .degrees(5)
         } else {
-            return 1
+            return .degrees(0)
+        }
+    }
+    
+    private func correctSetRotation (_ state: SetState) -> Angle {
+        if state == .correctSet {
+            return .degrees(180)
+        }
+        else {
+            return .degrees(0)
         }
     }
     
@@ -46,13 +77,26 @@ struct Cardify: AnimatableModifier {
 
         static let defaultBorder: Color = .gray.opacity(0.3)
         static let selectedBorder: Color = .orange
+        static let hintBorder: Color = .brown
         static let setFill: Color = Color(red: 1.0, green: 1.0, blue: 0.65)
         static let incorrectSetFill: Color = .gray.opacity(0.3)
     }
 }
 
 extension View {
-    func cardify(isSet: Bool?, isSelected: Bool) -> some View {
-        return self.modifier(Cardify(isSet: isSet, isSelected: isSelected))
+    func cardify(state: SetState) -> some View {
+        return self.modifier(Cardify(state: state))
     }
 }
+
+//                .scaleEffect(scaleFactor(state))
+//                .animation(.interpolatingSpring(mass: 7, stiffness: 2500, damping: 0), value: state)
+
+//    private func scaleFactor (_ state: SetState) -> CGFloat {
+//        if state == .correctSet {
+//            return 1.1
+//        } else {
+//            return 1
+//        }
+//    }
+    

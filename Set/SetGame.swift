@@ -19,6 +19,9 @@ struct SetGame {
     private (set) var score: Int
     private var timeStart: Date
     
+    private var hintActive = false
+    private var hintedSet = [Int]()
+    
     init(cards: Array<Card>) {
         self.cards = cards.shuffled()
         score = 0
@@ -35,18 +38,24 @@ struct SetGame {
     }
     
     private mutating func resetStatus(of index: Int) {
-        /* Resets isSelected & isSet status of card */
-        cards[index].isSelected = false
-        cards[index].isSet = nil
+        /* Resets state of card */
+        cards[index].state = .inactive
     }
     
     mutating func choose(_ card: Card){
         var chosenIndex = cards.firstIndex(where: {$0.id == card.id}) ?? 0 // chosenIndex is index of the chosen card in our Card deck
+        
+        if hintActive {
+            hintedSet.forEach { index in
+                resetStatus(of: index)
+            }
+            hintActive = false
+        }
                         
         // there are already 3 chosen cards
         if selectedCards.count == 3 {
             // currently selected card is already selected
-            if cards[chosenIndex].isSelected {
+            if cards[chosenIndex].state == .selected {
                 if isSet == true {
                     // do nothing
                 } else {
@@ -57,7 +66,7 @@ struct SetGame {
                 }
             }
             // currently selected card in't part of the 3 selected cards
-            else if !cards[chosenIndex].isSelected {
+            else if cards[chosenIndex].state != .selected {
                 for index in selectedCards.sorted().reversed() {
                     if isSet == true {
                         // reset card status
@@ -78,18 +87,17 @@ struct SetGame {
         }
         
         if selectedCards.count < 3 {
-            if cards[chosenIndex].isSelected {
+            if cards[chosenIndex].state == .selected {
                 // deselect it
                 selectedComb = zip(selectedComb, cards[chosenIndex].combinations).map(-)
                 selectedCards.remove(at: selectedCards.firstIndex(of: chosenIndex)!)
-                cards[chosenIndex].isSelected.toggle()
+                cards[chosenIndex].state = .inactive
             } else {
                 // select it and check for set
-                cards[chosenIndex].isSelected = true
+                cards[chosenIndex].state = .selected
                 
                 selectedComb = zip(selectedComb, cards[chosenIndex].combinations).map(+)
                 selectedCards.append(chosenIndex)
-                
                 
                 if selectedCards.count == 3 {
                 setLoop: for index in selectedComb {
@@ -114,46 +122,44 @@ struct SetGame {
                     }
                     
                     for index in selectedCards {
-                        cards[index].isSet = isSet
+                        switch isSet {
+                        case true:
+                            cards[index].state = .correctSet
+                        case false:
+                            cards[index].state = .incorrrectSet
+                        }
                     }
                 }
             }
         }
     }
     
-    func setPresent (in cardCount: Int) -> (Bool, [Int]) {
+    mutating func setPresent (in cardCount: Int) -> Bool {
         var setPresent = false
-        var potentialSet = [Int]()
         var comb = [0,0,0,0]
         
         if cardCount != 0 {
-            
-            // need to rename count
             let count = min(cardCount, 20)
             
         cardLoop: for (i, card) in cards[0..<count - 2].enumerated() {
-            potentialSet = [i]
             comb = card.combinations
             
             // skip cards that are a Set
-            if card.isSet == true {
+            if card.state == .correctSet {
                 continue
             }
             // check 2nd card
-            for (j, potentialCard) in cards [i+1..<count - 1].enumerated() {
-                
-                // add comb
+            for j in stride(from: i+1, to: count - 1, by: 1) {
+                let potentialCard = cards[j]
                 comb = zip(comb, potentialCard.combinations).map(+)
                 
                 // check 3rd card
-                for potentialMatch in cards [j + i..<count] {
-                    
-                    // add comb
+                for k in stride(from: j+1, to: count, by: 1) {
+                    let potentialMatch = cards[k]
                     comb = zip(comb, potentialMatch.combinations).map(+)
                     
                     // check for set
                     setLoop: for index in comb {
-                        
                         switch index {
                         case 0, 3, 6:
                             setPresent = true
@@ -165,7 +171,7 @@ struct SetGame {
                     
                     if setPresent {
                         // set found
-                        potentialSet.append(contentsOf: [j, j+1])
+                        hintedSet = [i, j, k]
                         break cardLoop
                     } else {
                         // remove comb
@@ -177,12 +183,12 @@ struct SetGame {
             }
         }
         }
-        return (setPresent, potentialSet)
+        return setPresent
     }
     
     mutating func dealMoreCards() {
         // penalise
-        if setPresent(in: activeCards).0 {
+        if setPresent(in: activeCards) {
             score -= 1
         }
         
@@ -208,4 +214,13 @@ struct SetGame {
         timeStart = Date()
     }
     
+    mutating func showHint() {
+        if !hintActive {
+            hintActive = setPresent(in: activeCards)
+            for index in hintedSet {
+                cards[index].state = .hint
+            }
+            score -= 5
+        }
+    }
 }

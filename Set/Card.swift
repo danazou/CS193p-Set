@@ -27,9 +27,13 @@ struct Card: Identifiable {
     }
     
 //    var isMatched: Bool = false
-    var isSet: Bool? = nil
-    var isSelected: Bool = false
+//    var isSet: Bool? = nil
+//    var isSelected: Bool = false
 //    var isDiscarded = false
+    var state = SetState.inactive
     
-    
+}
+
+enum SetState {
+    case correctSet, incorrrectSet, selected, inactive, hint
 }

@@ -62,7 +62,7 @@ class ClassicalSetGame: ObservableObject {
     }
     
     var setPresent: Bool {
-        model.setPresent(in: model.activeCards).0
+        model.setPresent(in: model.activeCards)
     }
 
     @ViewBuilder func symbol(_ shape: String, opacity: CGFloat, strokeWidth width: CGFloat) -> some View {
@@ -125,6 +125,10 @@ class ClassicalSetGame: ObservableObject {
     
     func dealGame () {
         model.dealGame()
+    }
+    
+    func showHint () {
+        model.showHint()
     }
 }
 
